@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoding</title>
+    <script>
+        // Function to convert a file to Base64
+        function convertToBase64(file, callback) {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                // Get Base64 encoded string from the result
+                callback(reader.result.split(',')[1]);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Listening for the message from Thunkable to start the encoding
+        window.addEventListener("message", function(event) {
+            if (event.data.type === "convertToBase64" && event.data.file) {
+                convertToBase64(event.data.file, function(base64String) {
+                    // Send the Base64 encoded string back to Thunkable
+                    window.parent.postMessage({type: "base64Encoded", base64: base64String}, "*");
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Base64 Encoding</h1>
+</body>
+</html>
