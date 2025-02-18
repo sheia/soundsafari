@@ -1,32 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base64 Encoding</title>
-    <script>
-        // Function to convert a file to Base64
-        function convertToBase64(file, callback) {
-            var reader = new FileReader();
-            reader.onloadend = function() {
-                // Get Base64 encoded string from the result
-                callback(reader.result.split(',')[1]);
-            };
-            reader.readAsDataURL(file);
-        }
+window.addEventListener("message", function(event) {
+  console.log("Received message:", event.data); // Log the received message to check its structure
 
-        // Listening for the message from Thunkable to start the encoding
-        window.addEventListener("message", function(event) {
-            if (event.data.type === "convertToBase64" && event.data.file) {
-                convertToBase64(event.data.file, function(base64String) {
-                    // Send the Base64 encoded string back to Thunkable
-                    window.parent.postMessage({type: "base64Encoded", base64: base64String}, "*");
-                });
-            }
-        });
-    </script>
-</head>
-<body>
-    <h1>Base64 Encoding</h1>
-</body>
-</html>
+  // Check if the message has the expected type and data
+  if (event.data.type === "convertToBase64") {
+    let fileUrl = event.data.file;
+    console.log("File URL:", fileUrl); // Log the file URL received
+    convertToBase64(fileUrl);
+  }
+});
+
+// Example of your conversion function:
+function convertToBase64(fileUrl) {
+  console.log("Starting conversion for URL:", fileUrl); // Log before conversion
+  fetch(fileUrl)
+    .then(response => response.arrayBuffer())  // Fetch file and convert to ArrayBuffer
+    .then(buffer => {
+      let base64Data = arrayBufferToBase64(buffer);
+      console.log("Base64 conversion result:", base64Data); // Log the Base64 result
+      window.ReactNativeWebView.postMessage(base64Data);  // Send Base64 result back
+    })
+    .catch(err => {
+      console.error("Error fetching the file:", err); // Log any errors
+    });
+}
+
+// Convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  let bytes = new Uint8Array(buffer);
+  let len = bytes.length;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);  // Convert to Base64
+}
