@@ -11,6 +11,13 @@
         // Log to check if JavaScript is being executed
         console.log("JavaScript is loaded and executed.");
 
+        console.log("JavaScript loaded and listening for messages...");
+
+window.addEventListener("message", function(event) {
+    console.log("Received message from Thunkable:", event.data);
+}, false);
+
+
         // Function to convert ArrayBuffer to Base64
         function arrayBufferToBase64(buffer) {
             let binary = '';
