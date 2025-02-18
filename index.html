@@ -1,62 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sound Safari - Base64 Encoder</title>
-  <script>
-    // Event listener for receiving messages
-    window.addEventListener("message", function(event) {
-      console.log("Received message:", event.data);
-      
-      // Check if the message is of type "convertToBase64"
-      if (event.data.type === "convertToBase64") {
-        let fileUrl = event.data.file;
-        console.log("File URL to be converted:", fileUrl);
-        convertToBase64(fileUrl); // Call the function to convert the file to Base64
-      } else {
-        console.log("Received message but not of type 'convertToBase64'. Ignoring.");
-      }
-    });
-
-    // Function to convert file to Base64
-    function convertToBase64(fileUrl) {
-      console.log("Starting conversion for file URL:", fileUrl);
-      
-      // Fetch the file as an array buffer
-      fetch(fileUrl)
-        .then(response => {
-          console.log("Received response from fetch.");
-          return response.arrayBuffer(); // Convert the response to an array buffer
-        })
-        .then(buffer => {
-          console.log("File successfully converted to array buffer.");
-          let base64Data = arrayBufferToBase64(buffer); // Convert the buffer to Base64
-          console.log("Base64 conversion result:", base64Data);
-          
-          // Send the Base64 data back via postMessage
-          window.ReactNativeWebView.postMessage(base64Data);
-          console.log("Base64 data sent back to Thunkable.");
-        })
-        .catch(err => {
-          console.error("Error fetching or converting the file:", err);
-        });
-    }
-
-    // Convert ArrayBuffer to Base64
-    function arrayBufferToBase64(buffer) {
-      let binary = '';
-      let bytes = new Uint8Array(buffer);
-      let len = bytes.length;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return window.btoa(binary); // Convert the binary string to Base64
-    }
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Converter</title>
 </head>
 <body>
-  <h1>Sound Safari - Base64 Audio Encoder</h1>
-  <p>This page will convert audio files to Base64 format.</p>
+    <h1>Base64 Conversion</h1>
+    <script type="text/javascript">
+        // Function to convert ArrayBuffer to Base64
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            let bytes = new Uint8Array(buffer);
+            let length = bytes.length;
+            for (let i = 0; i < length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        // Listener for messages from Thunkable Web Bridge
+        window.addEventListener("message", function(event) {
+            // Log the received message for debugging
+            console.log("Received message:", event.data);
+
+            // Ensure the message contains valid data
+            if (event.data && event.data.type === "convertToBase64") {
+                let fileUrl = event.data.file;
+                console.log("File URL to be converted:", fileUrl);
+
+                // Fetch the file from the provided URL
+                fetch(fileUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            console.error("Failed to fetch file:", response.status);
+                            throw new Error("Failed to fetch file");
+                        }
+                        console.log("Successfully fetched the file.");
+                        return response.arrayBuffer(); // Convert response to ArrayBuffer
+                    })
+                    .then(buffer => {
+                        console.log("Successfully fetched and converted file.");
+                        let base64Data = arrayBufferToBase64(buffer); // Convert to Base64
+                        console.log("Base64 encoded data:", base64Data);
+
+                        // Send the Base64 data back to Thunkable
+                        window.ReactNativeWebView.postMessage(base64Data);
+                        console.log("Base64 data sent back to Thunkable.");
+                    })
+                    .catch(err => {
+                        console.error("Error fetching or converting file:", err);
+                    });
+            } else {
+                console.error("Invalid message data:", event.data);
+            }
+        });
+    </script>
 </body>
 </html>
